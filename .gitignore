@@ -2,3 +2,9 @@ __pycache__/
 .idea/
 lungmask.egg-info/
 lungmask/.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+*.pyc
