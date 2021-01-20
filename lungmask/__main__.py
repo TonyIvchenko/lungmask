@@ -5,8 +5,8 @@ from lungmask import mask
 from lungmask import utils
 import os
 import SimpleITK as sitk
-import pkg_resources
 import numpy as np
+from importlib.metadata import PackageNotFoundError, version
 
 
 def path(string):
@@ -17,7 +17,10 @@ def path(string):
 
 
 def main():
-    version = pkg_resources.require("lungmask")[0].version
+    try:
+        package_version = version("lungmask")
+    except PackageNotFoundError:
+        package_version = "0+unknown"
     
     parser = argparse.ArgumentParser()
     parser.add_argument('input', metavar='input', type=path, help='Path to the input image, can be a folder for dicoms')
@@ -28,7 +31,7 @@ def main():
     parser.add_argument('--nopostprocess', help="Deactivates postprocessing (removal of unconnected components and hole filling", action='store_true')
     parser.add_argument('--noHU', help="For processing of images that are not encoded in hounsfield units (HU). E.g. png or jpg images from the web. Be aware, results may be substantially worse on these images", action='store_true')
     parser.add_argument('--batchsize', type=int, help="Number of slices processed simultaneously. Lower number requires less memory but may be slower.", default=20)
-    parser.add_argument('--version', help="Shows the current version of lungmask", action='version', version=version)
+    parser.add_argument('--version', help="Shows the current version of lungmask", action='version', version=package_version)
 
     argsin = sys.argv[1:]
     args = parser.parse_args(argsin)
