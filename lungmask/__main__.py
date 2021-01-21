@@ -16,6 +16,13 @@ def path(string):
         sys.exit(f'File not found: {string}')
 
 
+def positive_int(value):
+    ivalue = int(value)
+    if ivalue < 1:
+        raise argparse.ArgumentTypeError("batchsize must be >= 1")
+    return ivalue
+
+
 def main():
     try:
         package_version = version("lungmask")
@@ -26,11 +33,11 @@ def main():
     parser.add_argument('input', metavar='input', type=path, help='Path to the input image, can be a folder for dicoms')
     parser.add_argument('output', metavar='output', type=str, help='Filepath for output lungmask')
     parser.add_argument('--modeltype', help='Default: unet', type=str, choices=['unet'], default='unet')
-    parser.add_argument('--modelname', help="spcifies the trained model, Default: R231", type=str, choices=['R231','LTRCLobes','LTRCLobes_R231','R231CovidWeb'], default='R231')
+    parser.add_argument('--modelname', help="Specifies the trained model. Default: R231", type=str, choices=['R231','LTRCLobes','LTRCLobes_R231','R231CovidWeb'], default='R231')
     parser.add_argument('--cpu', help="Force using the CPU even when a GPU is available, will override batchsize to 1", action='store_true')
-    parser.add_argument('--nopostprocess', help="Deactivates postprocessing (removal of unconnected components and hole filling", action='store_true')
+    parser.add_argument('--nopostprocess', help="Deactivates postprocessing (removal of unconnected components and hole filling)", action='store_true')
     parser.add_argument('--noHU', help="For processing of images that are not encoded in hounsfield units (HU). E.g. png or jpg images from the web. Be aware, results may be substantially worse on these images", action='store_true')
-    parser.add_argument('--batchsize', type=int, help="Number of slices processed simultaneously. Lower number requires less memory but may be slower.", default=20)
+    parser.add_argument('--batchsize', type=positive_int, help="Number of slices processed simultaneously. Lower number requires less memory but may be slower.", default=20)
     parser.add_argument('--version', help="Shows the current version of lungmask", action='version', version=package_version)
 
     argsin = sys.argv[1:]
