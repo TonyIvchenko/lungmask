@@ -58,11 +58,15 @@ def main():
         result = mask.apply(input_image, model, force_cpu=args.cpu, batch_size=batchsize, volume_postprocessing=not(args.nopostprocess), noHU=args.noHU)
         
     if args.noHU:
-        file_ending = args.output.split('.')[-1]
-        print(file_ending)
-        if file_ending in ['jpg','jpeg','png']:
-            result = (result/(result.max())*255).astype(np.uint8)
-        result = result[0]
+        file_ending = os.path.splitext(args.output)[1].lower().lstrip(".")
+        if file_ending in {"jpg", "jpeg", "png"}:
+            max_value = int(result.max())
+            if max_value > 0:
+                result = (result / max_value * 255).astype(np.uint8)
+            else:
+                result = np.zeros_like(result, dtype=np.uint8)
+        if result.ndim == 3:
+            result = result[0]
              
     result_out= sitk.GetImageFromArray(result)
     result_out.CopyInformation(input_image)
