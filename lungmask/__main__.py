@@ -23,6 +23,27 @@ def positive_int(value):
     return ivalue
 
 
+def run_inference(input_image, args, batchsize):
+    if args.modelname == 'LTRCLobes_R231':
+        return mask.apply_fused(
+            input_image,
+            force_cpu=args.cpu,
+            batch_size=batchsize,
+            volume_postprocessing=not args.nopostprocess,
+            noHU=args.noHU,
+        )
+
+    model = mask.get_model(args.modeltype, args.modelname)
+    return mask.apply(
+        input_image,
+        model,
+        force_cpu=args.cpu,
+        batch_size=batchsize,
+        volume_postprocessing=not args.nopostprocess,
+        noHU=args.noHU,
+    )
+
+
 def main():
     try:
         package_version = version("lungmask")
@@ -51,11 +72,7 @@ def main():
     
     input_image = utils.get_input_image(args.input)
     logging.info(f'Infer lungmask')
-    if args.modelname == 'LTRCLobes_R231':
-        result = mask.apply_fused(input_image, force_cpu=args.cpu, batch_size=batchsize, volume_postprocessing=not(args.nopostprocess), noHU=args.noHU)
-    else:
-        model = mask.get_model(args.modeltype, args.modelname)
-        result = mask.apply(input_image, model, force_cpu=args.cpu, batch_size=batchsize, volume_postprocessing=not(args.nopostprocess), noHU=args.noHU)
+    result = run_inference(input_image, args, batchsize)
         
     if args.noHU:
         file_ending = os.path.splitext(args.output)[1].lower().lstrip(".")
