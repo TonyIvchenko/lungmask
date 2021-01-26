@@ -191,7 +191,7 @@ def get_input_image(path):
     return input_image
 
 
-def postrocessing(label_image, spare=[]):
+def postprocessing(label_image, spare=[]):
     '''some post-processing mapping small label patches to the neighbout whith which they share the
         largest border. All connected components smaller than min_area will be removed
     '''
@@ -246,6 +246,11 @@ def postrocessing(label_image, spare=[]):
         outmask[holefiller(keep_largest_connected_component(outmask_mapped == i))] = i
 
     return outmask
+
+
+def postrocessing(label_image, spare=[]):
+    """Backward compatible alias for previous misspelled API."""
+    return postprocessing(label_image, spare=spare)
 
 
 def bbox_3D(labelmap, margin=2):
