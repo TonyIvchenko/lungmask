@@ -191,10 +191,11 @@ def get_input_image(path):
     return input_image
 
 
-def postprocessing(label_image, spare=[]):
+def postprocessing(label_image, spare=None):
     '''some post-processing mapping small label patches to the neighbout whith which they share the
         largest border. All connected components smaller than min_area will be removed
     '''
+    spare = set() if spare is None else set(np.atleast_1d(spare).tolist())
 
     # merge small components to neighbours
     regionmask = skimage.measure.label(label_image)
@@ -221,7 +222,7 @@ def postprocessing(label_image, spare=[]):
             maxmap = 0
             myarea = 0
             for ix, n in enumerate(neighbours):
-                if n != 0 and n != r.label and counts[ix] > maxmap and n != spare:
+                if n != 0 and n != r.label and counts[ix] > maxmap and n not in spare:
                     maxmap = counts[ix]
                     mapto = n
                     myarea = r.area
@@ -233,7 +234,8 @@ def postprocessing(label_image, spare=[]):
             regions[regionlabels.index(mapto)].__dict__['_cache']['area'] += myarea
 
     outmask_mapped = region_to_lobemap[regionmask]
-    outmask_mapped[outmask_mapped==spare] = 0 
+    if spare:
+        outmask_mapped[np.isin(outmask_mapped, list(spare))] = 0
 
     if outmask_mapped.shape[0] == 1:
         # holefiller = lambda x: ndimage.morphology.binary_fill_holes(x[0])[None, :, :] # This is bad for slices that show the liver
@@ -248,7 +250,7 @@ def postprocessing(label_image, spare=[]):
     return outmask
 
 
-def postrocessing(label_image, spare=[]):
+def postrocessing(label_image, spare=None):
     """Backward compatible alias for previous misspelled API."""
     return postprocessing(label_image, spare=spare)
 
