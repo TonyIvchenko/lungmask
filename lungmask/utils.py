@@ -280,6 +280,8 @@ def bbox_3D(labelmap, margin=2):
 def keep_largest_connected_component(mask):
     mask = skimage.measure.label(mask)
     regions = skimage.measure.regionprops(mask)
+    if not regions:
+        return np.zeros_like(mask, dtype=bool)
     resizes = np.asarray([x.area for x in regions])
     max_region = np.argsort(resizes)[-1] + 1
     mask = mask == max_region
