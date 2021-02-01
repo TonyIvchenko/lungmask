@@ -257,6 +257,8 @@ def postrocessing(label_image, spare=None):
 
 def bbox_3D(labelmap, margin=2):
     shape = labelmap.shape
+    if not np.any(labelmap):
+        return np.asarray([0, shape[0], 0, shape[1], 0, shape[2]])
     r = np.any(labelmap, axis=(1, 2))
     c = np.any(labelmap, axis=(0, 2))
     z = np.any(labelmap, axis=(0, 1))
