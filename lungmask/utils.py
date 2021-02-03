@@ -144,9 +144,8 @@ def read_dicoms(path, primary=True, original=True):
                                 # if 'KVP' in dicom_header:
                                 #     kvp = dicom_header.KVP
                                 # dcm_parameters.append([ck, kvp,dicom_header.SliceThickness])
-            except:
-                logging.error("Unexpected error:", sys.exc_info()[0])
-                logging.warning("Doesn't seem to be DICOM, will be skipped: ", fname)
+            except Exception as exc:
+                logging.warning("Skipping unreadable/non-DICOM file %s: %s", fname, exc)
 
     conc = [x[1] for x in dcm_header_info]
     sidx = np.argsort(conc)
