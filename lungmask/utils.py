@@ -163,8 +163,8 @@ def read_dicoms(path, primary=True, original=True):
         curr_vol = i
         info_idxs = np.where(vol_unique[2] == curr_vol)[0]
         vol_files = dcm_header_info[info_idxs, 2]
-        positions = np.asarray([np.asarray(x[2]) for x in dcm_header_info[info_idxs, 3]])
-        slicesort_idx = np.argsort(positions)
+        positions = np.asarray([np.asarray(x, dtype=float) for x in dcm_header_info[info_idxs, 3]])
+        slicesort_idx = np.argsort(positions[:, 2])
         vol_files = vol_files[slicesort_idx]
         relevant_series.append(vol_files)
         reader = sitk.ImageSeriesReader()
