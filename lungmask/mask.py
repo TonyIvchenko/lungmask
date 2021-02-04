@@ -20,6 +20,20 @@ model_urls = {('unet', 'R231'): ('https://github.com/JoHof/lungmask/releases/dow
                   'https://github.com/JoHof/lungmask/releases/download/v0.0/unet_r231covid-0de78a7e.pth', 3)}
 
 
+def _prepare_non_hu_slice(image_array):
+    if image_array.ndim == 2:
+        return image_array
+
+    if image_array.ndim == 3:
+        if image_array.shape[-1] in (3, 4):
+            return skimage.color.rgb2gray(image_array[..., :3])
+        if image_array.shape[0] == 1:
+            return image_array[0]
+        raise ValueError("noHU mode expects a single 2D slice or RGB image.")
+
+    raise ValueError("Unsupported input shape for noHU mode.")
+
+
 def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessing=True, noHU=False):
     if model is None:
         model = get_model('unet', 'R231')
@@ -48,12 +62,13 @@ def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessi
         tvolslices = np.divide((tvolslices + 1024), 1624)
     else:
         # support for non HU images. This is just a hack. The models were not trained with this in mind
-        tvolslices = skimage.color.rgb2gray(inimg_raw)
-        tvolslices = skimage.transform.resize(tvolslices, [256, 256])
-        tvolslices = np.asarray([tvolslices*x for x in np.linspace(0.3,2,20)])
+        tvolslice = _prepare_non_hu_slice(inimg_raw)
+        tvolslice = skimage.transform.resize(tvolslice, [256, 256], preserve_range=True)
+        tvolslices = np.asarray([tvolslice * x for x in np.linspace(0.3, 2, 20)])
         tvolslices[tvolslices>1] = 1
         sanity = [(tvolslices[x]>0.6).sum()>25000 for x in range(len(tvolslices))]
-        tvolslices = tvolslices[sanity]
+        if any(sanity):
+            tvolslices = tvolslices[sanity]
     torch_ds_val = utils.LungLabelsDS_inf(tvolslices)
     dataloader_val = torch.utils.data.DataLoader(torch_ds_val, batch_size=batch_size, shuffle=False, num_workers=1,
                                                  pin_memory=False)
