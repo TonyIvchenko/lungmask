@@ -103,14 +103,19 @@ def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessi
 
 
 def get_model(modeltype, modelname):
-    model_url, n_classes = model_urls[(modeltype, modelname)]
+    key = (modeltype, modelname)
+    if key not in model_urls:
+        available = ", ".join(sorted([f"{k[0]}/{k[1]}" for k in model_urls]))
+        raise ValueError(f"Unknown model '{modeltype}/{modelname}'. Available models: {available}")
+
+    model_url, n_classes = model_urls[key]
     state_dict = torch.hub.load_state_dict_from_url(model_url, progress=True, map_location=torch.device('cpu'))
     if modeltype == 'unet':
         model = UNet(n_classes=n_classes, padding=True, depth=5, up_mode='upsample', batch_norm=True, residual=False)
     elif modeltype == 'resunet':
         model = UNet(n_classes=n_classes, padding=True, depth=5, up_mode='upsample', batch_norm=True, residual=True)
     else:
-        logging.exception(f"Model {modelname} not known")
+        raise ValueError(f"Unsupported model type: {modeltype}")
     model.load_state_dict(state_dict)
     model.eval()
     return model
