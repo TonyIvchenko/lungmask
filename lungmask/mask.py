@@ -4,13 +4,12 @@ from lungmask import utils
 import SimpleITK as sitk
 from .resunet import UNet
 import warnings
-import sys
 from tqdm import tqdm
 import skimage
 import logging
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 warnings.filterwarnings("ignore", category=UserWarning)
+logger = logging.getLogger(__name__)
 
 # stores urls and number of classes of the models
 model_urls = {('unet', 'R231'): ('https://github.com/JoHof/lungmask/releases/download/v0.0/unet_r231-d5d2fc3d.pth', 3),
@@ -50,7 +49,7 @@ def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessi
         if torch.cuda.is_available():
             device = torch.device('cuda')
         else:
-            logging.info("No GPU support available, will use CPU. Note, that this is significantly slower!")
+            logger.info("No GPU support available, will use CPU. Note, that this is significantly slower!")
             batch_size = 1
             device = torch.device('cpu')
     model.to(device)
@@ -85,7 +84,7 @@ def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessi
     # postprocessing includes removal of small connected components, hole filling and mapping of small components to
     # neighbors
     if volume_postprocessing:
-        outmask = utils.postrocessing(timage_res)
+        outmask = utils.postprocessing(timage_res)
     else:
         outmask = timage_res
 
@@ -125,12 +124,12 @@ def apply_fused(image, basemodel = 'LTRCLobes', fillmodel = 'R231', force_cpu=Fa
     '''Will apply basemodel and use fillmodel to mitiage false negatives'''
     mdl_r = get_model('unet',fillmodel)
     mdl_l = get_model('unet',basemodel)
-    logging.info("Apply: %s" % basemodel)
+    logger.info("Apply: %s" % basemodel)
     res_l = apply(image, mdl_l, force_cpu=force_cpu, batch_size=batch_size,  volume_postprocessing=volume_postprocessing, noHU=noHU)
-    logging.info("Apply: %s" % fillmodel)
+    logger.info("Apply: %s" % fillmodel)
     res_r = apply(image, mdl_r, force_cpu=force_cpu, batch_size=batch_size,  volume_postprocessing=volume_postprocessing, noHU=noHU)
     spare_value = res_l.max()+1
     res_l[np.logical_and(res_l==0, res_r>0)] = spare_value
     res_l[res_r==0] = 0
-    logging.info("Fusing results... this may take up to several minutes!")
-    return utils.postrocessing(res_l, spare=[spare_value])
+    logger.info("Fusing results... this may take up to several minutes!")
+    return utils.postprocessing(res_l, spare=[spare_value])
