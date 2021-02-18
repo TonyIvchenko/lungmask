@@ -44,12 +44,7 @@ def run_inference(input_image, args, batchsize):
     )
 
 
-def main():
-    try:
-        package_version = version("lungmask")
-    except PackageNotFoundError:
-        package_version = "0+unknown"
-    
+def build_parser(package_version):
     parser = argparse.ArgumentParser()
     parser.add_argument('input', metavar='input', type=path, help='Path to the input image, can be a folder for dicoms')
     parser.add_argument('output', metavar='output', type=str, help='Filepath for output lungmask')
@@ -60,9 +55,17 @@ def main():
     parser.add_argument('--noHU', help="For processing of images that are not encoded in hounsfield units (HU). E.g. png or jpg images from the web. Be aware, results may be substantially worse on these images", action='store_true')
     parser.add_argument('--batchsize', type=positive_int, help="Number of slices processed simultaneously. Lower number requires less memory but may be slower.", default=20)
     parser.add_argument('--version', help="Shows the current version of lungmask", action='version', version=package_version)
+    return parser
 
-    argsin = sys.argv[1:]
-    args = parser.parse_args(argsin)
+
+def main(argv=None):
+    try:
+        package_version = version("lungmask")
+    except PackageNotFoundError:
+        package_version = "0+unknown"
+
+    parser = build_parser(package_version)
+    args = parser.parse_args(sys.argv[1:] if argv is None else argv)
     
     batchsize = args.batchsize
     if args.cpu:
