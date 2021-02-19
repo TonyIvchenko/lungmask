@@ -33,6 +33,10 @@ def _prepare_non_hu_slice(image_array):
     raise ValueError("Unsupported input shape for noHU mode.")
 
 
+def available_models(modeltype="unet"):
+    return sorted([name for mtype, name in model_urls if mtype == modeltype])
+
+
 def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessing=True, noHU=False):
     if model is None:
         model = get_model('unet', 'R231')
