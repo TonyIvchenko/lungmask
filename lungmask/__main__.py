@@ -26,7 +26,7 @@ def positive_int(value):
 
 
 def run_inference(input_image, args, batchsize):
-    if args.modelname == 'LTRCLobes_R231':
+    if args.modelname == FUSED_MODEL_NAME:
         return mask.apply_fused(
             input_image,
             force_cpu=args.cpu,
