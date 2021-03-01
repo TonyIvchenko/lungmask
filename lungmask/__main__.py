@@ -46,6 +46,19 @@ def run_inference(input_image, args, batchsize):
     )
 
 
+def normalize_nohu_output(result, output_path):
+    file_ending = os.path.splitext(output_path)[1].lower().lstrip(".")
+    if file_ending in {"jpg", "jpeg", "png"}:
+        max_value = int(result.max())
+        if max_value > 0:
+            result = (result / max_value * 255).astype(np.uint8)
+        else:
+            result = np.zeros_like(result, dtype=np.uint8)
+    if result.ndim == 3:
+        result = result[0]
+    return result
+
+
 def build_parser(package_version):
     model_choices = mask.available_models("unet") + [FUSED_MODEL_NAME]
     parser = argparse.ArgumentParser()
@@ -81,15 +94,7 @@ def main(argv=None):
     result = run_inference(input_image, args, batchsize)
         
     if args.noHU:
-        file_ending = os.path.splitext(args.output)[1].lower().lstrip(".")
-        if file_ending in {"jpg", "jpeg", "png"}:
-            max_value = int(result.max())
-            if max_value > 0:
-                result = (result / max_value * 255).astype(np.uint8)
-            else:
-                result = np.zeros_like(result, dtype=np.uint8)
-        if result.ndim == 3:
-            result = result[0]
+        result = normalize_nohu_output(result, args.output)
              
     result_out= sitk.GetImageFromArray(result)
     result_out.CopyInformation(input_image)
