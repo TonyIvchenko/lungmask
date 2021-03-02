@@ -59,6 +59,11 @@ def normalize_nohu_output(result, output_path):
     return result
 
 
+def copy_image_metadata(result_out, input_image):
+    if result_out.GetDimension() == input_image.GetDimension():
+        result_out.CopyInformation(input_image)
+
+
 def build_parser(package_version):
     model_choices = mask.available_models("unet") + [FUSED_MODEL_NAME]
     parser = argparse.ArgumentParser()
@@ -97,7 +102,7 @@ def main(argv=None):
         result = normalize_nohu_output(result, args.output)
              
     result_out= sitk.GetImageFromArray(result)
-    result_out.CopyInformation(input_image)
+    copy_image_metadata(result_out, input_image)
     logging.info(f'Save result to: {args.output}')
     sys.exit(sitk.WriteImage(result_out, args.output))
 
