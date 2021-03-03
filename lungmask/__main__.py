@@ -104,8 +104,9 @@ def main(argv=None):
     result_out= sitk.GetImageFromArray(result)
     copy_image_metadata(result_out, input_image)
     logging.info(f'Save result to: {args.output}')
-    sys.exit(sitk.WriteImage(result_out, args.output))
+    sitk.WriteImage(result_out, args.output)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
