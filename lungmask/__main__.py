@@ -64,6 +64,11 @@ def copy_image_metadata(result_out, input_image):
         result_out.CopyInformation(input_image)
 
 
+def configure_logging(verbose=False):
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(level=level, format="%(levelname)s: %(message)s")
+
+
 def build_parser(package_version):
     model_choices = mask.available_models("unet") + [FUSED_MODEL_NAME]
     parser = argparse.ArgumentParser()
@@ -75,6 +80,7 @@ def build_parser(package_version):
     parser.add_argument('--nopostprocess', help="Deactivates postprocessing (removal of unconnected components and hole filling)", action='store_true')
     parser.add_argument('--noHU', help="For processing of images that are not encoded in hounsfield units (HU). E.g. png or jpg images from the web. Be aware, results may be substantially worse on these images", action='store_true')
     parser.add_argument('--batchsize', type=positive_int, help="Number of slices processed simultaneously. Lower number requires less memory but may be slower.", default=20)
+    parser.add_argument('--verbose', help="Enable verbose logging output", action='store_true')
     parser.add_argument('--version', help="Shows the current version of lungmask", action='version', version=package_version)
     return parser
 
@@ -87,6 +93,7 @@ def main(argv=None):
 
     parser = build_parser(package_version)
     args = parser.parse_args(sys.argv[1:] if argv is None else argv)
+    configure_logging(args.verbose)
     
     batchsize = args.batchsize
     if args.cpu:
