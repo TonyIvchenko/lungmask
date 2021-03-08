@@ -69,6 +69,11 @@ def configure_logging(verbose=False):
     logging.basicConfig(level=level, format="%(levelname)s: %(message)s")
 
 
+def validate_cli_args(args, parser):
+    if args.noHU and os.path.isdir(args.input):
+        parser.error("--noHU expects an input file, not a directory")
+
+
 def build_parser(package_version):
     model_choices = mask.available_models("unet") + [FUSED_MODEL_NAME]
     parser = argparse.ArgumentParser()
@@ -93,6 +98,7 @@ def main(argv=None):
 
     parser = build_parser(package_version)
     args = parser.parse_args(sys.argv[1:] if argv is None else argv)
+    validate_cli_args(args, parser)
     configure_logging(args.verbose)
     
     batchsize = args.batchsize
