@@ -38,6 +38,9 @@ def available_models(modeltype="unet"):
 
 
 def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessing=True, noHU=False):
+    if batch_size < 1:
+        raise ValueError("batch_size must be >= 1")
+
     if model is None:
         model = get_model('unet', 'R231')
 
