@@ -60,6 +60,7 @@ def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessi
             batch_size = 1
             device = torch.device('cpu')
     model.to(device)
+    model.eval()
 
     
     if not noHU:
