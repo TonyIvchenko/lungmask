@@ -37,6 +37,15 @@ def available_models(modeltype="unet"):
     return sorted([name for mtype, name in model_urls if mtype == modeltype])
 
 
+def _resolve_device(force_cpu=False):
+    if force_cpu:
+        return torch.device("cpu")
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    logger.info("No GPU support available, will use CPU. Note, that this is significantly slower!")
+    return torch.device("cpu")
+
+
 def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessing=True, noHU=False):
     if batch_size < 1:
         raise ValueError("batch_size must be >= 1")
@@ -50,15 +59,9 @@ def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessi
         inimg_raw = np.flip(inimg_raw, np.where(directions[[0,4,8]][::-1]<0)[0])
     del image
 
-    if force_cpu:
-        device = torch.device('cpu')
-    else:
-        if torch.cuda.is_available():
-            device = torch.device('cuda')
-        else:
-            logger.info("No GPU support available, will use CPU. Note, that this is significantly slower!")
-            batch_size = 1
-            device = torch.device('cpu')
+    device = _resolve_device(force_cpu=force_cpu)
+    if device.type == "cpu" and not force_cpu:
+        batch_size = 1
     model.to(device)
     model.eval()
 
