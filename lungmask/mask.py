@@ -83,14 +83,15 @@ def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessi
     dataloader_val = torch.utils.data.DataLoader(torch_ds_val, batch_size=batch_size, shuffle=False, num_workers=1,
                                                  pin_memory=False)
 
-    timage_res = np.empty((np.append(0, tvolslices[0].shape)), dtype=np.uint8)
+    predictions = []
 
     with torch.no_grad():
         for X in tqdm(dataloader_val):
             X = X.float().to(device)
             prediction = model(X)
             pls = torch.max(prediction, 1)[1].detach().cpu().numpy().astype(np.uint8)
-            timage_res = np.vstack((timage_res, pls))
+            predictions.append(pls)
+    timage_res = np.concatenate(predictions, axis=0)
 
     # postprocessing includes removal of small connected components, hole filling and mapping of small components to
     # neighbors
