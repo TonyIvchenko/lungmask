@@ -46,7 +46,7 @@ def _resolve_device(force_cpu=False):
     return torch.device("cpu")
 
 
-def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessing=True, noHU=False):
+def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessing=True, noHU=False, dataloader_workers=1):
     if batch_size < 1:
         raise ValueError("batch_size must be >= 1")
 
@@ -80,7 +80,7 @@ def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessi
         if any(sanity):
             tvolslices = tvolslices[sanity]
     torch_ds_val = utils.LungLabelsDS_inf(tvolslices)
-    dataloader_val = torch.utils.data.DataLoader(torch_ds_val, batch_size=batch_size, shuffle=False, num_workers=1,
+    dataloader_val = torch.utils.data.DataLoader(torch_ds_val, batch_size=batch_size, shuffle=False, num_workers=dataloader_workers,
                                                  pin_memory=False)
 
     predictions = []
