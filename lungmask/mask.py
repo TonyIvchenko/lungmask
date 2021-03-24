@@ -132,14 +132,39 @@ def get_model(modeltype, modelname):
     return model
 
 
-def apply_fused(image, basemodel = 'LTRCLobes', fillmodel = 'R231', force_cpu=False, batch_size=20, volume_postprocessing=True, noHU=False):
+def apply_fused(
+    image,
+    basemodel='LTRCLobes',
+    fillmodel='R231',
+    force_cpu=False,
+    batch_size=20,
+    volume_postprocessing=True,
+    noHU=False,
+    dataloader_workers=1,
+):
     '''Will apply basemodel and use fillmodel to mitiage false negatives'''
     mdl_r = get_model('unet',fillmodel)
     mdl_l = get_model('unet',basemodel)
     logger.info("Apply: %s" % basemodel)
-    res_l = apply(image, mdl_l, force_cpu=force_cpu, batch_size=batch_size,  volume_postprocessing=volume_postprocessing, noHU=noHU)
+    res_l = apply(
+        image,
+        mdl_l,
+        force_cpu=force_cpu,
+        batch_size=batch_size,
+        volume_postprocessing=volume_postprocessing,
+        noHU=noHU,
+        dataloader_workers=dataloader_workers,
+    )
     logger.info("Apply: %s" % fillmodel)
-    res_r = apply(image, mdl_r, force_cpu=force_cpu, batch_size=batch_size,  volume_postprocessing=volume_postprocessing, noHU=noHU)
+    res_r = apply(
+        image,
+        mdl_r,
+        force_cpu=force_cpu,
+        batch_size=batch_size,
+        volume_postprocessing=volume_postprocessing,
+        noHU=noHU,
+        dataloader_workers=dataloader_workers,
+    )
     spare_value = res_l.max()+1
     res_l[np.logical_and(res_l==0, res_r>0)] = spare_value
     res_l[res_r==0] = 0
