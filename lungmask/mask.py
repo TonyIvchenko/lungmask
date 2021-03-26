@@ -7,6 +7,7 @@ import warnings
 from tqdm import tqdm
 import skimage
 import logging
+from typing import Iterable, Optional
 
 warnings.filterwarnings("ignore", category=UserWarning)
 logger = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ def _prepare_non_hu_slice(image_array):
 
 
 def available_models(modeltype="unet"):
+    """Return sorted model names registered for a given model type."""
     return sorted([name for mtype, name in model_urls if mtype == modeltype])
 
 
@@ -46,7 +48,16 @@ def _resolve_device(force_cpu=False):
     return torch.device("cpu")
 
 
-def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessing=True, noHU=False, dataloader_workers=1):
+def apply(
+    image,
+    model=None,
+    force_cpu=False,
+    batch_size=20,
+    volume_postprocessing=True,
+    noHU=False,
+    dataloader_workers=1,
+):
+    """Apply a trained model to an input image and return a segmentation mask."""
     if batch_size < 1:
         raise ValueError("batch_size must be >= 1")
 
@@ -114,6 +125,7 @@ def apply(image, model=None, force_cpu=False, batch_size=20, volume_postprocessi
 
 
 def get_model(modeltype, modelname):
+    """Load a model checkpoint by type and name."""
     key = (modeltype, modelname)
     if key not in model_urls:
         available = ", ".join(sorted([f"{k[0]}/{k[1]}" for k in model_urls]))
@@ -142,7 +154,7 @@ def apply_fused(
     noHU=False,
     dataloader_workers=1,
 ):
-    '''Will apply basemodel and use fillmodel to mitiage false negatives'''
+    """Apply basemodel and use fillmodel to mitigate false negatives."""
     mdl_r = get_model('unet',fillmodel)
     mdl_l = get_model('unet',basemodel)
     logger.info("Apply: %s" % basemodel)
