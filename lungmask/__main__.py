@@ -33,6 +33,7 @@ def run_inference(input_image, args, batchsize):
             batch_size=batchsize,
             volume_postprocessing=not args.nopostprocess,
             noHU=args.noHU,
+            dataloader_workers=args.workers,
         )
 
     model = mask.get_model(args.modeltype, args.modelname)
@@ -43,6 +44,7 @@ def run_inference(input_image, args, batchsize):
         batch_size=batchsize,
         volume_postprocessing=not args.nopostprocess,
         noHU=args.noHU,
+        dataloader_workers=args.workers,
     )
 
 
@@ -85,6 +87,7 @@ def build_parser(package_version):
     parser.add_argument('--nopostprocess', help="Deactivates postprocessing (removal of unconnected components and hole filling)", action='store_true')
     parser.add_argument('--noHU', help="For processing of images that are not encoded in hounsfield units (HU). E.g. png or jpg images from the web. Be aware, results may be substantially worse on these images", action='store_true')
     parser.add_argument('--batchsize', type=positive_int, help="Number of slices processed simultaneously. Lower number requires less memory but may be slower.", default=20)
+    parser.add_argument('--workers', type=positive_int, help="Number of DataLoader worker processes.", default=1)
     parser.add_argument('--verbose', help="Enable verbose logging output", action='store_true')
     parser.add_argument('--version', help="Shows the current version of lungmask", action='version', version=package_version)
     return parser
