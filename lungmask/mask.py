@@ -7,7 +7,7 @@ import warnings
 from tqdm import tqdm
 import skimage
 import logging
-from typing import Iterable, Optional
+from typing import List
 
 warnings.filterwarnings("ignore", category=UserWarning)
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ def _prepare_non_hu_slice(image_array):
     raise ValueError("Unsupported input shape for noHU mode.")
 
 
-def available_models(modeltype="unet"):
+def available_models(modeltype="unet") -> List[str]:
     """Return sorted model names registered for a given model type."""
     return sorted([name for mtype, name in model_urls if mtype == modeltype])
 
