@@ -11,6 +11,8 @@ from tqdm import tqdm
 import fill_voids
 import skimage.morphology
 
+logger = logging.getLogger(__name__)
+
 
 def preprocess(img, label=None, resolution=[192, 192]):
     imgmtx = np.copy(img)
@@ -145,7 +147,7 @@ def read_dicoms(path, primary=True, original=True):
                                 #     kvp = dicom_header.KVP
                                 # dcm_parameters.append([ck, kvp,dicom_header.SliceThickness])
             except Exception as exc:
-                logging.warning("Skipping unreadable/non-DICOM file %s: %s", fname, exc)
+                logger.warning("Skipping unreadable/non-DICOM file %s: %s", fname, exc)
 
     conc = [x[1] for x in dcm_header_info]
     sidx = np.argsort(conc)
@@ -154,7 +156,7 @@ def read_dicoms(path, primary=True, original=True):
     # dcm_parameters = np.asarray(dcm_parameters)[sidx]
     vol_unique = np.unique(conc, return_index=1, return_inverse=1)  # unique volumes
     n_vol = len(vol_unique[1])
-    logging.info('There are ' + str(n_vol) + ' volumes in the study')
+    logger.info('There are %s volumes in the study', n_vol)
 
     relevant_series = []
     relevant_volumes = []
@@ -177,15 +179,15 @@ def read_dicoms(path, primary=True, original=True):
 
 def get_input_image(path):
     if os.path.isfile(path):
-        logging.info(f'Read input: {path}')
+        logger.info(f'Read input: {path}')
         input_image = sitk.ReadImage(path)
     else:
-        logging.info(f'Looking for dicoms in {path}')
+        logger.info(f'Looking for dicoms in {path}')
         dicom_vols = read_dicoms(path, original=False, primary=False)
         if len(dicom_vols) < 1:
             sys.exit('No dicoms found!')
         if len(dicom_vols) > 1:
-            logging.warning("There are more than one volume in the path, will take the largest one")
+            logger.warning("There are more than one volume in the path, will take the largest one")
         input_image = dicom_vols[np.argmax([np.prod(v.GetSize()) for v in dicom_vols], axis=0)]
     return input_image
 
