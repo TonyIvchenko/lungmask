@@ -14,9 +14,9 @@ import skimage.morphology
 logger = logging.getLogger(__name__)
 
 
-def preprocess(img, label=None, resolution=[192, 192]):
+def preprocess(img, label=None, resolution=(192, 192)):
     imgmtx = np.copy(img)
-    lblsmtx = np.copy(label)
+    lblsmtx = np.copy(label) if label is not None else None
 
     imgmtx[imgmtx < -1024] = -1024
     imgmtx[imgmtx > 600] = 600
