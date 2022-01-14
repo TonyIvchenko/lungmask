@@ -145,6 +145,8 @@ def configure_logging(verbose=False):
 def validate_cli_args(args, parser):
     if args.noHU and os.path.isdir(args.input):
         parser.error("--noHU expects an input file, not a directory")
+    if args.index_width < 1:
+        parser.error("--index-width must be >= 1")
 
 
 def build_parser(package_version):
@@ -159,6 +161,11 @@ def build_parser(package_version):
     parser.add_argument('--noHU', help="For processing of images that are not encoded in hounsfield units (HU). E.g. png or jpg images from the web. Be aware, results may be substantially worse on these images", action='store_true')
     parser.add_argument('--batchsize', type=positive_int, help="Number of slices processed simultaneously. Lower number requires less memory but may be slower.", default=20)
     parser.add_argument('--workers', type=positive_int, help="Number of DataLoader worker processes.", default=1)
+    parser.add_argument('--export-png-dir', type=Path, help="Optional output folder for per-slice PNG masks.")
+    parser.add_argument('--png-prefix', type=str, help="Optional basename prefix for exported PNG masks.")
+    parser.add_argument('--axis', type=str, choices=['x', 'y', 'z'], default='z', help="Axis suffix used in PNG filenames.")
+    parser.add_argument('--index-width', type=int, default=3, help="Zero-padding width for PNG slice indices.")
+    parser.add_argument('--overwrite-png', action='store_true', help="Overwrite existing PNG mask slices.")
     parser.add_argument('--verbose', help="Enable verbose logging output", action='store_true')
     parser.add_argument('--version', help="Shows the current version of lungmask", action='version', version=package_version)
     return parser
@@ -184,6 +191,25 @@ def main(argv=None):
     input_image = utils.get_input_image(args.input)
     logging.info(f'Infer lungmask')
     result = run_inference(input_image, args, batchsize)
+
+    if args.export_png_dir is not None:
+        png_base_name = args.png_prefix or strip_nii_extension(args.input)
+        records = export_png_slices(
+            mask_array=result,
+            output_dir=args.export_png_dir,
+            base_name=png_base_name,
+            axis=args.axis,
+            index_width=args.index_width,
+            overwrite=args.overwrite_png,
+        )
+        written_count = sum(1 for row in records if row["status"] == "written")
+        skipped_count = len(records) - written_count
+        logging.info(
+            "Exported PNG masks to %s (%s written, %s skipped)",
+            args.export_png_dir,
+            written_count,
+            skipped_count,
+        )
         
     if args.noHU:
         result = normalize_nohu_output(result, args.output)
