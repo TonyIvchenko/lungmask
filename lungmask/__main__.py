@@ -1,6 +1,7 @@
 import sys
 import argparse
 import logging
+from pathlib import Path
 from lungmask import mask
 from lungmask import utils
 import os
@@ -16,6 +17,76 @@ def path(string):
         return string
     else:
         sys.exit(f'File not found: {string}')
+
+
+def strip_nii_extension(path_value):
+    filename = Path(path_value).name
+    if filename.endswith(".nii.gz"):
+        return filename[:-7]
+    if filename.endswith(".nii"):
+        return filename[:-4]
+    return Path(path_value).stem
+
+
+def build_slice_filename(base_name, slice_index, volume_index=None, index_width=3, axis="z"):
+    if axis not in {"x", "y", "z"}:
+        raise ValueError(f"Unsupported axis '{axis}'. Expected one of: x, y, z.")
+    if volume_index is None:
+        return f"{base_name}_{axis}{slice_index:0{index_width}d}.png"
+    return (
+        f"{base_name}_t{volume_index:0{index_width}d}_{axis}{slice_index:0{index_width}d}.png"
+    )
+
+
+def ensure_mask_volume(mask_array):
+    if mask_array.ndim == 2:
+        return mask_array[None, :, :]
+    if mask_array.ndim == 3:
+        return mask_array
+    raise ValueError(f"Expected 2D/3D mask array, got shape {mask_array.shape}.")
+
+
+def iter_mask_slices(mask_array, axis="z"):
+    axis_to_index = {"x": 0, "y": 1, "z": 2}
+    if axis not in axis_to_index:
+        raise ValueError(f"Unsupported axis '{axis}'. Expected one of: x, y, z.")
+
+    volume = ensure_mask_volume(mask_array)
+    axis_index = axis_to_index[axis]
+    total_slices = volume.shape[axis_index]
+
+    for current_slice in range(total_slices):
+        yield current_slice + 1, np.take(volume, current_slice, axis=axis_index)
+
+
+def export_png_slices(
+    mask_array,
+    output_dir,
+    base_name,
+    axis="z",
+    index_width=3,
+    overwrite=False,
+):
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    records = []
+    for slice_index, slice_data in iter_mask_slices(mask_array, axis=axis):
+        image_name = build_slice_filename(
+            base_name=base_name,
+            slice_index=slice_index,
+            axis=axis,
+            index_width=index_width,
+        )
+        image_path = output_dir / image_name
+        if image_path.exists() and not overwrite:
+            records.append({"slice_index": slice_index, "path": str(image_path), "status": "skipped_existing"})
+            continue
+
+        slice_image = sitk.GetImageFromArray(slice_data.astype(np.uint8))
+        sitk.WriteImage(slice_image, str(image_path))
+        records.append({"slice_index": slice_index, "path": str(image_path), "status": "written"})
+    return records
 
 
 def positive_int(value):
