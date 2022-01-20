@@ -1,5 +1,6 @@
 import sys
 import argparse
+import json
 import logging
 from pathlib import Path
 from lungmask import mask
@@ -89,6 +90,25 @@ def export_png_slices(
     return records
 
 
+def build_manifest(args, batchsize, png_records):
+    return {
+        "input": args.input,
+        "output_volume": args.output,
+        "modeltype": args.modeltype,
+        "modelname": args.modelname,
+        "cpu": args.cpu,
+        "batchsize": batchsize,
+        "workers": args.workers,
+        "noHU": args.noHU,
+        "export_png_dir": str(args.export_png_dir) if args.export_png_dir is not None else None,
+        "png_prefix": args.png_prefix,
+        "axis": args.axis,
+        "index_width": args.index_width,
+        "overwrite_png": args.overwrite_png,
+        "png_records": png_records,
+    }
+
+
 def positive_int(value):
     ivalue = int(value)
     if ivalue < 1:
@@ -166,6 +186,7 @@ def build_parser(package_version):
     parser.add_argument('--axis', type=str, choices=['x', 'y', 'z'], default='z', help="Axis suffix used in PNG filenames.")
     parser.add_argument('--index-width', type=int, default=3, help="Zero-padding width for PNG slice indices.")
     parser.add_argument('--overwrite-png', action='store_true', help="Overwrite existing PNG mask slices.")
+    parser.add_argument('--manifest-json', type=Path, help="Optional path for writing run/export metadata as JSON.")
     parser.add_argument('--verbose', help="Enable verbose logging output", action='store_true')
     parser.add_argument('--version', help="Shows the current version of lungmask", action='version', version=package_version)
     return parser
@@ -191,10 +212,11 @@ def main(argv=None):
     input_image = utils.get_input_image(args.input)
     logging.info(f'Infer lungmask')
     result = run_inference(input_image, args, batchsize)
+    png_records = []
 
     if args.export_png_dir is not None:
         png_base_name = args.png_prefix or strip_nii_extension(args.input)
-        records = export_png_slices(
+        png_records = export_png_slices(
             mask_array=result,
             output_dir=args.export_png_dir,
             base_name=png_base_name,
@@ -202,8 +224,8 @@ def main(argv=None):
             index_width=args.index_width,
             overwrite=args.overwrite_png,
         )
-        written_count = sum(1 for row in records if row["status"] == "written")
-        skipped_count = len(records) - written_count
+        written_count = sum(1 for row in png_records if row["status"] == "written")
+        skipped_count = len(png_records) - written_count
         logging.info(
             "Exported PNG masks to %s (%s written, %s skipped)",
             args.export_png_dir,
@@ -218,6 +240,12 @@ def main(argv=None):
     copy_image_metadata(result_out, input_image)
     logging.info(f'Save result to: {args.output}')
     sitk.WriteImage(result_out, args.output)
+
+    if args.manifest_json is not None:
+        args.manifest_json.parent.mkdir(parents=True, exist_ok=True)
+        payload = build_manifest(args=args, batchsize=batchsize, png_records=png_records)
+        args.manifest_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        logging.info('Saved manifest to: %s', args.manifest_json)
     return 0
 
 
