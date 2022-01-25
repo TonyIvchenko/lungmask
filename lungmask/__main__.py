@@ -167,13 +167,17 @@ def validate_cli_args(args, parser):
         parser.error("--noHU expects an input file, not a directory")
     if args.index_width < 1:
         parser.error("--index-width must be >= 1")
+    if args.skip_volume_output and args.output is None and args.export_png_dir is None:
+        parser.error("nothing to save: provide output path and/or --export-png-dir")
+    if not args.skip_volume_output and args.output is None:
+        parser.error("output path is required unless --skip-volume-output is set")
 
 
 def build_parser(package_version):
     model_choices = mask.available_models("unet") + [FUSED_MODEL_NAME]
     parser = argparse.ArgumentParser()
     parser.add_argument('input', metavar='input', type=path, help='Path to the input image, can be a folder for dicoms')
-    parser.add_argument('output', metavar='output', type=str, help='Filepath for output lungmask')
+    parser.add_argument('output', metavar='output', nargs='?', type=str, help='Filepath for output lungmask volume')
     parser.add_argument('--modeltype', help='Default: unet', type=str, choices=['unet'], default='unet')
     parser.add_argument('--modelname', help="Specifies the trained model. Default: R231", type=str, choices=model_choices, default='R231')
     parser.add_argument('--cpu', help="Force using the CPU even when a GPU is available, will override batchsize to 1", action='store_true')
@@ -186,6 +190,7 @@ def build_parser(package_version):
     parser.add_argument('--axis', type=str, choices=['x', 'y', 'z'], default='z', help="Axis suffix used in PNG filenames.")
     parser.add_argument('--index-width', type=int, default=3, help="Zero-padding width for PNG slice indices.")
     parser.add_argument('--overwrite-png', action='store_true', help="Overwrite existing PNG mask slices.")
+    parser.add_argument('--skip-volume-output', action='store_true', help="Skip writing the output volume file.")
     parser.add_argument('--manifest-json', type=Path, help="Optional path for writing run/export metadata as JSON.")
     parser.add_argument('--verbose', help="Enable verbose logging output", action='store_true')
     parser.add_argument('--version', help="Shows the current version of lungmask", action='version', version=package_version)
@@ -233,13 +238,18 @@ def main(argv=None):
             skipped_count,
         )
         
-    if args.noHU:
-        result = normalize_nohu_output(result, args.output)
-             
-    result_out= sitk.GetImageFromArray(result)
-    copy_image_metadata(result_out, input_image)
-    logging.info(f'Save result to: {args.output}')
-    sitk.WriteImage(result_out, args.output)
+    if not args.skip_volume_output:
+        if args.noHU:
+            result_to_save = normalize_nohu_output(result, args.output)
+        else:
+            result_to_save = result
+
+        result_out = sitk.GetImageFromArray(result_to_save)
+        copy_image_metadata(result_out, input_image)
+        logging.info(f'Save result to: {args.output}')
+        sitk.WriteImage(result_out, args.output)
+    else:
+        logging.info('Skipping volume output file due to --skip-volume-output')
 
     if args.manifest_json is not None:
         args.manifest_json.parent.mkdir(parents=True, exist_ok=True)
