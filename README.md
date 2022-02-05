@@ -53,6 +53,29 @@ For additional options type:
 lungmask -h
 ```
 
+### PNG slice export for downstream training
+
+To export per-slice PNG masks using the same naming convention as
+`nifti-image-converter`:
+
+```
+lungmask INPUT OUTPUT \
+  --export-png-dir masks_png \
+  --png-prefix case01 \
+  --axis z \
+  --index-width 3 \
+  --manifest-json masks_png/manifest.json
+```
+
+PNG-only mode (skip output volume):
+
+```
+lungmask INPUT \
+  --skip-volume-output \
+  --export-png-dir masks_png \
+  --png-prefix case01
+```
+
 ### As a python module:
 
 ```
@@ -94,9 +117,11 @@ For local development:
 ```
 pip install -r requirements.txt
 pip install -e .
+pip install -r requirements-dev.txt
 ```
 
 The project now also includes a minimal ```pyproject.toml``` build-system declaration for modern packaging tools.
+A GitHub Actions workflow runs syntax smoke checks and unit tests on pushes and pull requests.
 
 
  
