@@ -25,3 +25,7 @@ def _sample_payload():
             {"status": "skipped_existing", "path": "masks/scan_z002.png", "slice_index": 2},
         ],
     }
+
+
+def test_export_model_name():
+    assert export_helpers.export_model_name(_sample_payload()) == "R231"
