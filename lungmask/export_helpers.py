@@ -7,3 +7,7 @@ def _records(payload):
 
 def export_model_name(payload):
     return payload.get("modelname")
+
+
+def export_model_type(payload):
+    return payload.get("modeltype")
