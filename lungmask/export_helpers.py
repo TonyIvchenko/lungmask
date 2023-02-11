@@ -11,3 +11,7 @@ def export_model_name(payload):
 
 def export_model_type(payload):
     return payload.get("modeltype")
+
+
+def export_output_volume(payload):
+    return payload.get("output_volume")
