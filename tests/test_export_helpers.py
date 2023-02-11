@@ -29,3 +29,7 @@ def _sample_payload():
 
 def test_export_model_name():
     assert export_helpers.export_model_name(_sample_payload()) == "R231"
+
+
+def test_export_model_type():
+    assert export_helpers.export_model_type(_sample_payload()) == "unet"
