@@ -19,3 +19,7 @@ def export_output_volume(payload):
 
 def export_png_dir(payload):
     return payload.get("export_png_dir")
+
+
+def export_png_prefix(payload):
+    return payload.get("png_prefix")
