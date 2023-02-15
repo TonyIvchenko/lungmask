@@ -33,3 +33,7 @@ def test_export_model_name():
 
 def test_export_model_type():
     assert export_helpers.export_model_type(_sample_payload()) == "unet"
+
+
+def test_export_output_volume():
+    assert export_helpers.export_output_volume(_sample_payload()) == "scan-mask.nii.gz"
