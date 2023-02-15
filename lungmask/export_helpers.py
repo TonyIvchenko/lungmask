@@ -15,3 +15,7 @@ def export_model_type(payload):
 
 def export_output_volume(payload):
     return payload.get("output_volume")
+
+
+def export_png_dir(payload):
+    return payload.get("export_png_dir")
