@@ -37,3 +37,7 @@ def test_export_model_type():
 
 def test_export_output_volume():
     assert export_helpers.export_output_volume(_sample_payload()) == "scan-mask.nii.gz"
+
+
+def test_export_png_dir():
+    assert export_helpers.export_png_dir(_sample_payload()) == "masks"
