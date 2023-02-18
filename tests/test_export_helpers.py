@@ -41,3 +41,7 @@ def test_export_output_volume():
 
 def test_export_png_dir():
     assert export_helpers.export_png_dir(_sample_payload()) == "masks"
+
+
+def test_export_png_prefix():
+    assert export_helpers.export_png_prefix(_sample_payload()) == "scan"
