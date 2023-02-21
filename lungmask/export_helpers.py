@@ -23,3 +23,7 @@ def export_png_dir(payload):
 
 def export_png_prefix(payload):
     return payload.get("png_prefix")
+
+
+def export_axis(payload):
+    return payload.get("axis")
