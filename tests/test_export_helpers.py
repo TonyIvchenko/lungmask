@@ -45,3 +45,7 @@ def test_export_png_dir():
 
 def test_export_png_prefix():
     assert export_helpers.export_png_prefix(_sample_payload()) == "scan"
+
+
+def test_export_axis():
+    assert export_helpers.export_axis(_sample_payload()) == "z"
