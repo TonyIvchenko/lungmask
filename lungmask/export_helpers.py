@@ -27,3 +27,7 @@ def export_png_prefix(payload):
 
 def export_axis(payload):
     return payload.get("axis")
+
+
+def export_index_width(payload):
+    return payload.get("index_width")
