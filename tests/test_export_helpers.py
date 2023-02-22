@@ -49,3 +49,7 @@ def test_export_png_prefix():
 
 def test_export_axis():
     assert export_helpers.export_axis(_sample_payload()) == "z"
+
+
+def test_export_index_width():
+    assert export_helpers.export_index_width(_sample_payload()) == 3
