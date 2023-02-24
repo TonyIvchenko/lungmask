@@ -31,3 +31,7 @@ def export_axis(payload):
 
 def export_index_width(payload):
     return payload.get("index_width")
+
+
+def export_records(payload):
+    return _records(payload)
