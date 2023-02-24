@@ -53,3 +53,7 @@ def test_export_axis():
 
 def test_export_index_width():
     assert export_helpers.export_index_width(_sample_payload()) == 3
+
+
+def test_export_records():
+    assert len(export_helpers.export_records(_sample_payload())) == 3
