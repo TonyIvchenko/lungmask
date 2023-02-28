@@ -35,3 +35,7 @@ def export_index_width(payload):
 
 def export_records(payload):
     return _records(payload)
+
+
+def export_record_count(payload):
+    return len(_records(payload))
