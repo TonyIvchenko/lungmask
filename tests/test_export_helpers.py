@@ -57,3 +57,7 @@ def test_export_index_width():
 
 def test_export_records():
     assert len(export_helpers.export_records(_sample_payload())) == 3
+
+
+def test_export_record_count():
+    assert export_helpers.export_record_count(_sample_payload()) == 3
