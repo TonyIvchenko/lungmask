@@ -43,3 +43,7 @@ def export_record_count(payload):
 
 def export_written_count(payload):
     return sum(1 for record in _records(payload) if record.get("status") == "written")
+
+
+def export_skipped_count(payload):
+    return sum(1 for record in _records(payload) if record.get("status") == "skipped_existing")
