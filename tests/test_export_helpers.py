@@ -61,3 +61,7 @@ def test_export_records():
 
 def test_export_record_count():
     assert export_helpers.export_record_count(_sample_payload()) == 3
+
+
+def test_export_written_count():
+    assert export_helpers.export_written_count(_sample_payload()) == 2
