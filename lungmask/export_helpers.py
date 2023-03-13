@@ -47,3 +47,7 @@ def export_written_count(payload):
 
 def export_skipped_count(payload):
     return sum(1 for record in _records(payload) if record.get("status") == "skipped_existing")
+
+
+def export_paths(payload):
+    return [record.get("path") for record in _records(payload) if record.get("path")]
