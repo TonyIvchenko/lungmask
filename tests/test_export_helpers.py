@@ -69,3 +69,7 @@ def test_export_written_count():
 
 def test_export_skipped_count():
     assert export_helpers.export_skipped_count(_sample_payload()) == 1
+
+
+def test_export_paths():
+    assert len(export_helpers.export_paths(_sample_payload())) == 3
