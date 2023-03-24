@@ -51,3 +51,7 @@ def export_skipped_count(payload):
 
 def export_paths(payload):
     return [record.get("path") for record in _records(payload) if record.get("path")]
+
+
+def export_slice_indices(payload):
+    return [index for index in (record.get("slice_index") for record in _records(payload)) if isinstance(index, int)]
