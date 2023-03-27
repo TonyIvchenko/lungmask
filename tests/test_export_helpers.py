@@ -73,3 +73,7 @@ def test_export_skipped_count():
 
 def test_export_paths():
     assert len(export_helpers.export_paths(_sample_payload())) == 3
+
+
+def test_export_slice_indices():
+    assert export_helpers.export_slice_indices(_sample_payload()) == [1, 2, 2]
