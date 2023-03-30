@@ -55,3 +55,8 @@ def export_paths(payload):
 
 def export_slice_indices(payload):
     return [index for index in (record.get("slice_index") for record in _records(payload)) if isinstance(index, int)]
+
+
+def export_has_duplicate_paths(payload):
+    paths = export_paths(payload)
+    return len(paths) != len(set(paths))
