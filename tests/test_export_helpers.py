@@ -77,3 +77,7 @@ def test_export_paths():
 
 def test_export_slice_indices():
     assert export_helpers.export_slice_indices(_sample_payload()) == [1, 2, 2]
+
+
+def test_export_has_duplicate_paths():
+    assert export_helpers.export_has_duplicate_paths(_sample_payload()) is True
