@@ -60,3 +60,12 @@ def export_slice_indices(payload):
 def export_has_duplicate_paths(payload):
     paths = export_paths(payload)
     return len(paths) != len(set(paths))
+
+
+def export_summary(payload):
+    return {
+        "records": export_record_count(payload),
+        "written": export_written_count(payload),
+        "skipped_existing": export_skipped_count(payload),
+        "duplicates": export_has_duplicate_paths(payload),
+    }
