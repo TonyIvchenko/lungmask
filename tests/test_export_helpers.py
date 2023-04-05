@@ -81,3 +81,12 @@ def test_export_slice_indices():
 
 def test_export_has_duplicate_paths():
     assert export_helpers.export_has_duplicate_paths(_sample_payload()) is True
+
+
+def test_export_summary():
+    assert export_helpers.export_summary(_sample_payload()) == {
+        "records": 3,
+        "written": 2,
+        "skipped_existing": 1,
+        "duplicates": True,
+    }
