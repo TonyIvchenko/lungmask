@@ -69,3 +69,12 @@ def export_summary(payload):
         "skipped_existing": export_skipped_count(payload),
         "duplicates": export_has_duplicate_paths(payload),
     }
+
+
+def export_description(payload):
+    summary = export_summary(payload)
+    return (
+        f"model={export_model_name(payload)} "
+        f"records={summary['records']} "
+        f"written={summary['written']}"
+    )
