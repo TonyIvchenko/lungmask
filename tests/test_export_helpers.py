@@ -90,3 +90,9 @@ def test_export_summary():
         "skipped_existing": 1,
         "duplicates": True,
     }
+
+
+def test_export_description():
+    text = export_helpers.export_description(_sample_payload())
+    assert "model=R231" in text
+    assert "records=3" in text
