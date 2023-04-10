@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from lungmask import mask
 from lungmask import utils
+from lungmask import export_helpers
 import os
 import SimpleITK as sitk
 import numpy as np
@@ -229,13 +230,12 @@ def main(argv=None):
             index_width=args.index_width,
             overwrite=args.overwrite_png,
         )
-        written_count = sum(1 for row in png_records if row["status"] == "written")
-        skipped_count = len(png_records) - written_count
+        summary = export_helpers.export_summary({"png_records": png_records})
         logging.info(
             "Exported PNG masks to %s (%s written, %s skipped)",
             args.export_png_dir,
-            written_count,
-            skipped_count,
+            summary["written"],
+            summary["skipped_existing"],
         )
         
     if not args.skip_volume_output:
